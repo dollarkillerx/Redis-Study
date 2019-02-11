@@ -1,0 +1,77 @@
+html, body, div, p, h1, ul, li {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    font-size: 14px;
+    font-family: "Microsoft YaHei";
+    width: 960px;
+    margin: 0 auto;
+}
+
+li {
+    list-style: none;
+}
+
+i {
+    font-style: normal;
+}
+
+a {
+    text-decoration: none;
+    color: blue;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: crimson;
+}
+
+.clear {
+    clear: both;
+}
+
+.block {
+    border: 1px #ccc solid;
+    width: 760px;
+    padding: 20px;
+    margin: 0 auto;
+    box-shadow: 2px 2px 2px #ccc;
+    margin-bottom: 20px;
+}
+
+span.data {
+    color: crimson;
+    padding: 0 10px;
+}
+
+h1 {
+    width: 300px;
+    text-align: center;
+    margin: 0 auto;
+}
+
+ul.preview li {
+    float: left;
+    padding: 0 20px 0 0;
+}
+
+ul.pagelist li {
+    height: 25px;
+    line-height: 25px;
+}
+
+ul.pagination li {
+    display: block;
+    float: left;
+    padding: 0 5px;
+}
+
+ul.pagination li a {
+    color: blue;
+}
+
+ul.pagination li a:hover, ul.pagination li.active a {
+    color: crimson;
+}
