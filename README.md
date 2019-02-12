@@ -120,7 +120,76 @@ $redis->rPush($key,'管理员1登出');
 ### 消息队列
 - 消息队列是消息的顺序集合
 - 常用场景
-    - 1. 应对流量峰值
-    - 2. 异步处理(不定速的插入,生产和匀数的处理,消费)
-    - 3. 解耦应用(不同的来源的生产和不同去向的消费) 
+    - 1 应对流量峰值
+    - 2 异步处理(不定速的插入,生产和匀数的处理,消费)
+    - 3 解耦应用(不同的来源的生产和不同去向的消费) 
+- redis实现消息队列方式:
+    - 1 基于list
+    - 2 基于publish/subscribe 实现解耦
     
+![list](./readme/redisList.png)        
+``` 
+#redis list方式实现
+include_once './GetRedis.php';
+$redis = GetRedis::getInstance();
+$redis->select(0);
+$key = "list:index";
+$redis->rPush($key,1);
+=================================
+include_once './GetRedis.php';
+$redis = GetRedis::getInstance();
+$redis->select(0);
+$key = "list:index";
+while (true)
+{
+    if (false !==$redis->lPop($key)){
+        $redis->incrBy("pv:index",1);
+    }
+}
+```
+#### 基于list消息队列的特点
+* 与水库相识
+    - 1 水库的容量决定承载能力---redis的容量决定业务承载能力
+    - 2 每一滴水只能经过一个闸门---每条信息只能被一个消费者消费
+* 与水库不同
+    - 1 水库用于储水---一般要把消息全部消费掉
+    - 2 不要用的水扔掉---处理失败的消息要做容错
+### 基于publish/subscribe 订阅发布的消息队列实现
+![publish/subscribe](./readme/redisP.png)        
+``` 
+terminal
+SUBSCRIBE C1 C2 //监听C1 C2
+
+PUBLISH C1 MSG  //向C1发布MSG
+```
+``` 
+include_once './GetRedis.php';
+//监听者
+$redis = GetRedis::getInstance();
+
+echo 'reading C1,C2...\n';
+$redis->setOption(Redis::OPT_READ_TIMEOUT,-1);
+$redis->subscribe(['C1','C2'],function (Redis $instance,$channel,$msg){ //第一个是redis实例 ,第二个监听的渠道,监听到的内容
+    echo "recieve message from {$channel}:{$msg}\n";
+});
+================================================
+include_once './GetRedis.php';
+//发布者
+$redis = GetRedis::getInstance();
+
+$res = $redis->publish('C1','你好');
+echo "clients:{$res}\n";
+
+$res = $redis->publish('C2','你好c2');
+echo "clients:{$res}\n";
+
+$res = $redis->publish('C1','你好c1');
+echo "clients:{$res}\n";
+
+$res = $redis->publish('C3','你好c3');
+echo "clients:{$res}\n";
+```
+发送 监听 记录 统计
+>注释:
+subscribe的回调函数中只能执行(订阅,取消订阅,模式订阅,模式取消订阅)
+记录中 新实例化一个redis再操作
